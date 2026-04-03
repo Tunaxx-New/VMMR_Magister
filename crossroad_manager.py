@@ -25,6 +25,7 @@ from threading import Lock
 
 from vehicle_priority import get_priority
 from kalman_priority import KalmanPriorityFilter
+from config import cfg
 
 logger = logging.getLogger(__name__)
 
@@ -92,9 +93,9 @@ class CrossroadManager:
         self._last_tick    = 0.0
         self._tick_interval = 1.0
         self._kf           = KalmanPriorityFilter(
-            lookahead_seconds = 8.0,
-            process_noise     = 0.5,
-            measurement_noise = 1.0,
+            lookahead_seconds = cfg.KALMAN_LOOKAHEAD,
+            process_noise     = cfg.KALMAN_PROCESS_NOISE,
+            measurement_noise = cfg.KALMAN_MEAS_NOISE,
         )
         self._kf_state: dict = {}
 
@@ -139,12 +140,12 @@ class CrossroadManager:
 
         # ── Yellow phase: just wait for timer ────────────────────────────
         if phase.in_yellow:
-            if now - phase.yellow_at >= YELLOW_SECONDS:
+            if now - phase.yellow_at >= cfg.YELLOW_SECONDS:
                 self._do_switch(now)
             return
 
         # ── Minimum green guard ──────────────────────────────────────────
-        if elapsed < MIN_GREEN_SECONDS:
+        if elapsed < cfg.MIN_GREEN_SECONDS:
             return
 
         # ── Compute raw priority scores for both axes ─────────────────────
@@ -191,7 +192,7 @@ class CrossroadManager:
         # ── Kalman-smoothed score ratio ───────────────────────────────────
         if not should_switch and inactive_score > 0:
             ratio = inactive_score / max(active_score, 0.1)
-            if ratio >= SCORE_SWITCH_RATIO:
+            if ratio >= cfg.SCORE_SWITCH_RATIO:
                 should_switch = True
                 dominant = _top_vehicle(inactive_cars)
                 vel_info = (f"  vel={kf_out['ew_velocity' if ns_green else 'ns_velocity']:+.2f}/s")

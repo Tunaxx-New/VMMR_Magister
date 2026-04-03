@@ -238,6 +238,60 @@ class CarClassifier:
 
         return class_label, confidence
 
+    def predict_with_tta(
+        self,
+        crop_bgr: np.ndarray,
+        augments: int = 4,
+    ) -> tuple[str, float] | None:
+        """
+        Test-Time Augmentation: run the classifier on multiple crops
+        (original + flipped + brightness variants) and average the softmax.
+
+        More accurate than predict_crop() at ~3-4x the compute cost.
+        Only call this when you have time budget (e.g. on stable tracks).
+
+        augments: number of augmented views (1=original only, up to 6)
+        """
+        if crop_bgr is None or crop_bgr.size == 0:
+            return None
+        h, w = crop_bgr.shape[:2]
+        if min(h, w) < self.min_crop_size:
+            return None
+
+        import torchvision.transforms.functional as TF
+
+        rgb = cv2.cvtColor(crop_bgr, cv2.COLOR_BGR2RGB)
+        pil = Image.fromarray(rgb)
+
+        views = [pil]
+        if augments >= 2:
+            views.append(TF.hflip(pil))
+        if augments >= 3:
+            views.append(TF.adjust_brightness(pil, 1.3))
+        if augments >= 4:
+            views.append(TF.adjust_contrast(pil, 1.2))
+        if augments >= 5:
+            views.append(TF.adjust_brightness(pil, 0.75))
+        if augments >= 6:
+            views.append(TF.rotate(pil, 5))
+
+        tensors = torch.stack(
+            [self.transform(v) for v in views]
+        ).to(self.device)
+
+        with torch.no_grad():
+            outputs = self.model(tensors)
+            # Average softmax across all augmented views
+            avg_probs = torch.softmax(outputs, dim=1).mean(dim=0)
+            conf, pred = avg_probs.max(0)
+
+        confidence  = conf.item()
+        class_label = self.class_names[pred.item()]
+
+        if confidence < self.confidence_threshold:
+            return None
+        return class_label, confidence
+
     def predict_top_k(
         self,
         crop_bgr: np.ndarray,

@@ -26,14 +26,15 @@ from PIL import Image
 logger = logging.getLogger(__name__)
 
 from vehicle_priority import get_priority
+from config import cfg
 
 # ── Tuning constants ──────────────────────────────────────────────────────────
 
-IOU_MATCH_THRESHOLD       = 0.30   # min IoU to link same-region boxes
-EMBED_MATCH_THRESHOLD     = 0.80   # min cosine sim to link cross-region / re-entry
-MAX_LOST_FRAMES           = 25     # frames without detection before car is removed
-MIN_CONFIRM_FRAMES        = 2      # frames needed before car is announced as "new"
-EMBED_DIM                 = 512    # CLIP ViT-B/32 projection dimension
+# Thresholds loaded from cfg (.env)
+
+
+
+EMBED_DIM = 512
 
 
 # ── Data classes ──────────────────────────────────────────────────────────────
@@ -253,7 +254,7 @@ class CarTracker:
                     used_ids.add(car_id)
 
                 # Announce as new after MIN_CONFIRM_FRAMES
-                if car.frame_count == MIN_CONFIRM_FRAMES:
+                if car.frame_count == cfg.TRACKER_MIN_CONFIRM:
                     car.is_new = True
 
                 active.append(car)
@@ -261,7 +262,7 @@ class CarTracker:
             # Remove cars that have been lost too long
             to_remove = [
                 cid for cid, c in self._cars.items()
-                if c.lost_frames > MAX_LOST_FRAMES
+                if c.lost_frames > cfg.TRACKER_MAX_LOST
             ]
             for cid in to_remove:
                 logger.debug("Car %s left the scene", self._cars[cid].short_id)
@@ -318,7 +319,7 @@ class CarTracker:
             # Prefer IoU match in same direction (fast, cheap)
             if car.direction == direction:
                 iou = _iou(car.bbox, bbox)
-                if iou >= IOU_MATCH_THRESHOLD and iou > best_score:
+                if iou >= cfg.TRACKER_IOU_THRESH and iou > best_score:
                     best_score = iou
                     best_car   = car
 
@@ -327,7 +328,7 @@ class CarTracker:
                   and car.embedding is not None
                   and np.any(car.embedding)):
                 sim = EmbeddingExtractor.cosine_sim(car.embedding, embedding)
-                if sim >= EMBED_MATCH_THRESHOLD and sim > best_score:
+                if sim >= cfg.TRACKER_EMBED_THRESH and sim > best_score:
                     best_score = sim
                     best_car   = car
 

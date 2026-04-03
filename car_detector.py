@@ -199,10 +199,7 @@ class CarDetector:
         else:
             detections = []
 
-        cached = self._last_detections.get(direction, [])
-        if cached:
-            self._draw(annotated, cached)
-
+        # Return clean frame — drawing is handled by app.py using tracker IDs
         return detections, annotated
 
     # ------------------------------------------------------------------ #

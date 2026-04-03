@@ -157,6 +157,11 @@
         <span class="phase-lbl" id="phase-lbl">Waiting...</span>
         <span class="phase-timer" id="phase-timer"></span>
       </div>
+      <div style="display:flex;gap:16px;margin-top:2px">
+        <span style="font-size:10px;color:#4a9eff">N-S: <b id="kf-ns">—</b></span>
+        <span style="font-size:10px;color:#3db87a">E-W: <b id="kf-ew">—</b></span>
+        <span style="font-size:10px;color:#888">vel <span id="kf-vel">—</span></span>
+      </div>
     </div>
 
     <div class="stats-row">
@@ -258,6 +263,14 @@ function _renderCars(direction, cars) {
   }
 }
 
+function _weightBadge(weight, reason) {
+  // color and label by weight tier
+  if (weight >= 4.0) return ['#e03030', '!!!'];
+  if (weight >= 2.0) return ['#e0b020', '++'];
+  if (weight < 0.9)  return ['#888',    '-'];
+  return ['#3a3a4a', ''];
+}
+
 function _renderCarList(allCars) {
   const body  = document.getElementById('cars-body');
   const total = document.getElementById('cars-total');
@@ -269,14 +282,19 @@ function _renderCarList(allCars) {
   }
   body.innerHTML = '';
   allCars.forEach(car => {
-    const color = CAM_COLORS[car.direction] || '#888';
+    const color     = CAM_COLORS[car.direction] || '#888';
     const waitColor = car.wait > 20 ? '#e03030' : car.wait > 10 ? '#e0b020' : '#555';
+    const w         = car.weight || 1.0;
+    const [badgeColor, badgeTxt] = _weightBadge(w, car.reason||'');
+    const score = (w * (car.wait||0)).toFixed(1);
     const row = document.createElement('div');
     row.className = 'car-row';
+    row.title = `Priority score: ${score} | ${car.reason||'standard vehicle'} (weight ${w}x)`;
     row.innerHTML =
       `<div class="car-dir-dot" style="background:${color}" title="${car.direction}"></div>`+
       `<span class="car-id">[${car.id}]</span>`+
       `<span class="car-model" title="${car.model}">${car.model}</span>`+
+      (badgeTxt ? `<span style="font-size:9px;color:${badgeColor};font-weight:700;flex-shrink:0">${badgeTxt}</span>` : '')+
       `<span class="car-wait" style="color:${waitColor}">${car.wait}s</span>`;
     body.appendChild(row);
   });
@@ -356,16 +374,24 @@ const Monitor = {
     }, intervalMs||400);
   },
   updateQueues(data) {
-    // data = {north:[{id,model,wait,direction},...], ...}
     let allCars = [];
     Object.keys(data).forEach(dir => {
       const cars = data[dir];
       _renderCars(dir, cars);
       cars.forEach(c => allCars.push({...c, direction: dir}));
     });
-    // Sort by wait time descending
-    allCars.sort((a,b) => (b.wait||0) - (a.wait||0));
+    allCars.sort((a,b) => ((b.weight||1)*(b.wait||0)) - ((a.weight||1)*(a.wait||0)));
     _renderCarList(allCars);
+  },
+
+  updateKalman(kf) {
+    const ns = document.getElementById('kf-ns');
+    const ew = document.getElementById('kf-ew');
+    const vel = document.getElementById('kf-vel');
+    if (ns)  ns.textContent  = (kf.ns_smooth||0).toFixed(1) + ' ▶' + (kf.ns_predicted||0).toFixed(1);
+    if (ew)  ew.textContent  = (kf.ew_smooth||0).toFixed(1) + ' ▶' + (kf.ew_predicted||0).toFixed(1);
+    if (vel) vel.textContent = (kf.ns_velocity >= 0 ? '+' : '') + (kf.ns_velocity||0).toFixed(2)
+                             + ' / ' + (kf.ew_velocity >= 0 ? '+' : '') + (kf.ew_velocity||0).toFixed(2);
   },
 };
 
@@ -382,6 +408,7 @@ socket.on('flash_all',      d   => Monitor.flashAll(d.state, d.times, d.interval
 socket.on('set_stream',     d   => Monitor.setStream(d.dir, d.url));
 socket.on('camera_offline', d   => Monitor.setCameraOffline(d.dir));
 socket.on('update_queues',  d   => Monitor.updateQueues(d));
+socket.on('kalman_state',   d   => Monitor.updateKalman(d));
 </script>
 </body>
 </html>

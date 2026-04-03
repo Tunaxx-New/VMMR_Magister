@@ -6,50 +6,68 @@
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%;overflow:hidden;font-family:system-ui,sans-serif;background:#0f0f12;color:#e0e0e0}
-  .root{display:flex;gap:14px;padding:14px;height:100vh;overflow:hidden}
-  .left{flex:1;display:flex;flex-direction:column;gap:10px;min-width:0;min-height:0}
-  .right{width:258px;display:flex;flex-direction:column;gap:10px;min-height:0}
+  .root{display:flex;gap:12px;padding:12px;height:100vh;overflow:hidden}
+  .left{flex:1;display:flex;flex-direction:column;gap:8px;min-width:0;min-height:0}
+  .right{width:270px;display:flex;flex-direction:column;gap:8px;min-height:0}
 
-  /* cameras fill all remaining vertical space */
-  .cam-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:8px;flex:1;min-height:0}
+  /* cameras */
+  .cam-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:6px;flex:1;min-height:0}
   .cam-cell{background:#1a1a1f;border:1px solid #2a2a35;border-radius:8px;overflow:hidden;position:relative;min-height:0}
-  .cam-label{position:absolute;top:6px;left:7px;font-size:11px;font-weight:600;color:#fff;background:rgba(0,0,0,.55);padding:2px 7px;border-radius:4px;z-index:2;letter-spacing:.05em;text-transform:uppercase}
+  .cam-label{position:absolute;top:5px;left:6px;font-size:10px;font-weight:600;color:#fff;background:rgba(0,0,0,.55);padding:2px 6px;border-radius:4px;z-index:2;letter-spacing:.05em;text-transform:uppercase}
   .cam-cell img{width:100%;height:100%;display:block;object-fit:contain}
-  .cam-dot{position:absolute;bottom:7px;right:7px;width:7px;height:7px;border-radius:50%;background:#2ec040;animation:blink 1.6s infinite}
-  .cam-offline-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:#111}
+  .cam-dot{position:absolute;bottom:6px;right:6px;width:6px;height:6px;border-radius:50%;background:#2ec040;animation:blink 1.6s infinite}
+  .cam-offline-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;background:#111}
   .cam-offline-overlay svg{opacity:.3}
-  .cam-offline-overlay span{font-size:11px;color:rgba(255,255,255,.3);letter-spacing:.05em}
+  .cam-offline-overlay span{font-size:10px;color:rgba(255,255,255,.3);letter-spacing:.05em}
   @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
 
-  /* intersection — fixed, does not grow */
-  .cross-wrap{background:#1a1a1f;border:1px solid #2a2a35;border-radius:12px;padding:10px;display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0}
-  .cross-meta{display:flex;gap:14px;align-items:center}
-  .phase-lbl{font-size:12px;font-weight:500;color:#e0e0e0}
-  .phase-timer{font-size:12px;color:#888;font-variant-numeric:tabular-nums}
+  /* intersection */
+  .cross-wrap{background:#1a1a1f;border:1px solid #2a2a35;border-radius:10px;padding:8px;display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0}
+  .cross-meta{display:flex;gap:12px;align-items:center}
+  .phase-lbl{font-size:11px;font-weight:500;color:#e0e0e0}
+  .phase-timer{font-size:11px;color:#888;font-variant-numeric:tabular-nums}
 
-  /* stats — fixed, does not grow */
-  .stats-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;flex-shrink:0}
-  .stat{background:#1a1a1f;border:1px solid #2a2a35;border-radius:8px;padding:8px 13px}
-  .stat-lbl{font-size:11px;color:#888;margin-bottom:2px}
-  .stat-val{font-size:18px;font-weight:500;color:#e0e0e0}
+  /* stats */
+  .stats-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;flex-shrink:0}
+  .stat{background:#1a1a1f;border:1px solid #2a2a35;border-radius:7px;padding:6px 12px}
+  .stat-lbl{font-size:10px;color:#888;margin-bottom:2px}
+  .stat-val{font-size:16px;font-weight:500;color:#e0e0e0}
 
-  /* logs fill right column */
-  .logs-panel{background:#141418;border:1px solid #2a2a35;border-radius:12px;display:flex;flex-direction:column;flex:1;overflow:hidden;min-height:0}
-  .logs-hdr{padding:9px 13px;border-bottom:1px solid #2a2a35;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-  .logs-hdr-lbl{font-size:11px;font-weight:600;color:#666;letter-spacing:.06em}
-  .logs-clear{font-size:11px;cursor:pointer;background:none;border:none;color:#666;font-family:inherit}
+  /* right column */
+  .cars-panel{background:#141418;border:1px solid #2a2a35;border-radius:10px;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
+  .cars-hdr{padding:7px 12px;border-bottom:1px solid #2a2a35;display:flex;align-items:center;justify-content:space-between}
+  .cars-hdr-lbl{font-size:10px;font-weight:600;color:#666;letter-spacing:.06em}
+  .cars-body{overflow-y:auto;max-height:200px}
+  .car-row{display:flex;align-items:center;gap:6px;padding:4px 12px;border-bottom:1px solid #1e1e26}
+  .car-row:last-child{border-bottom:none}
+  .car-row:hover{background:#1e1e26}
+  .car-dir-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+  .car-id{font-size:10px;color:#666;font-variant-numeric:tabular-nums;min-width:44px}
+  .car-model{font-size:11px;color:#ccc;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .car-wait{font-size:10px;font-variant-numeric:tabular-nums;flex-shrink:0}
+  .car-empty{padding:10px 12px;font-size:11px;color:#555;text-align:center}
+
+  .logs-panel{background:#141418;border:1px solid #2a2a35;border-radius:10px;display:flex;flex-direction:column;flex:1;overflow:hidden;min-height:0}
+  .logs-hdr{padding:7px 12px;border-bottom:1px solid #2a2a35;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+  .logs-hdr-lbl{font-size:10px;font-weight:600;color:#666;letter-spacing:.06em}
+  .logs-clear{font-size:10px;cursor:pointer;background:none;border:none;color:#666;font-family:inherit}
   .logs-clear:hover{color:#aaa}
-  .logs-body{flex:1;overflow-y:auto;padding:4px 0;min-height:0}
-  .log-row{display:flex;align-items:center;gap:7px;padding:4px 13px}
+  .logs-body{flex:1;overflow-y:auto;padding:3px 0;min-height:0}
+  .log-row{display:flex;align-items:center;gap:6px;padding:3px 12px}
   .log-row:hover{background:#1e1e26}
-  .log-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-  .log-cam{font-size:12px;font-weight:500;color:#ccc;min-width:40px}
-  .log-evt{font-size:11px;color:#888;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .log-time{font-size:11px;color:#555;font-variant-numeric:tabular-nums;flex-shrink:0}
+  .log-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+  .log-cam{font-size:11px;font-weight:500;color:#ccc;min-width:36px}
+  .log-evt{font-size:10px;color:#888;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .log-time{font-size:10px;color:#555;font-variant-numeric:tabular-nums;flex-shrink:0}
+
+  .car-tip{position:fixed;background:#1e1e28;border:1px solid #3a3a4a;border-radius:5px;padding:3px 7px;font-size:10px;color:#ccc;pointer-events:none;white-space:nowrap;z-index:100;display:none}
 </style>
 </head>
 <body>
+<div class="car-tip" id="car-tip"></div>
 <div class="root">
+
+  <!-- LEFT: cameras + intersection + stats -->
   <div class="left">
     <div class="cam-grid">
       <div class="cam-cell" id="cell-north">
@@ -75,66 +93,93 @@
     </div>
 
     <div class="cross-wrap">
-      <svg width="200" height="200" viewBox="0 0 230 230">
-        <rect x="0"  y="80" width="230" height="70" fill="#2a2a30"/>
-        <rect x="80" y="0"  width="70"  height="230" fill="#2a2a30"/>
-        <rect x="80" y="80" width="70"  height="70"  fill="#242428"/>
-        <rect x="0"   y="0"   width="80" height="80"  fill="#1a1a1f"/>
-        <rect x="150" y="0"   width="80" height="80"  fill="#1a1a1f"/>
-        <rect x="0"   y="150" width="80" height="80"  fill="#1a1a1f"/>
-        <rect x="150" y="150" width="80" height="80"  fill="#1a1a1f"/>
-        <line x1="0"   y1="115" x2="80"  y2="115" stroke="#444" stroke-width="1.5" stroke-dasharray="9,7"/>
-        <line x1="150" y1="115" x2="230" y2="115" stroke="#444" stroke-width="1.5" stroke-dasharray="9,7"/>
-        <line x1="115" y1="0"   x2="115" y2="80"  stroke="#444" stroke-width="1.5" stroke-dasharray="9,7"/>
-        <line x1="115" y1="150" x2="115" y2="230" stroke="#444" stroke-width="1.5" stroke-dasharray="9,7"/>
-        <text x="115" y="13"  text-anchor="middle" fill="#555" font-size="10" font-family="sans-serif" font-weight="600">N</text>
-        <text x="115" y="224" text-anchor="middle" fill="#555" font-size="10" font-family="sans-serif" font-weight="600">S</text>
-        <text x="222" y="119" text-anchor="middle" fill="#555" font-size="10" font-family="sans-serif" font-weight="600">E</text>
-        <text x="9"   y="119" text-anchor="middle" fill="#555" font-size="10" font-family="sans-serif" font-weight="600">W</text>
-        <g transform="translate(94,52)">
-          <rect width="18" height="48" rx="4" fill="#111"/>
-          <circle id="n-r" cx="9" cy="11" r="5" fill="#282828"/>
-          <circle id="n-y" cx="9" cy="24" r="5" fill="#282828"/>
-          <circle id="n-g" cx="9" cy="37" r="5" fill="#282828"/>
+      <svg id="cross-svg" width="240" height="240" viewBox="0 0 340 340">
+        <rect x="0"   y="120" width="340" height="100" fill="#2a2a30"/>
+        <rect x="120" y="0"   width="100" height="340" fill="#2a2a30"/>
+        <rect x="120" y="120" width="100" height="100" fill="#242428"/>
+        <rect x="0"   y="0"   width="120" height="120" fill="#1a1a1f"/>
+        <rect x="220" y="0"   width="120" height="120" fill="#1a1a1f"/>
+        <rect x="0"   y="220" width="120" height="120" fill="#1a1a1f"/>
+        <rect x="220" y="220" width="120" height="120" fill="#1a1a1f"/>
+        <line x1="0"   y1="170" x2="120" y2="170" stroke="#444" stroke-width="1.5" stroke-dasharray="10,8"/>
+        <line x1="220" y1="170" x2="340" y2="170" stroke="#444" stroke-width="1.5" stroke-dasharray="10,8"/>
+        <line x1="170" y1="0"   x2="170" y2="120" stroke="#444" stroke-width="1.5" stroke-dasharray="10,8"/>
+        <line x1="170" y1="220" x2="170" y2="340" stroke="#444" stroke-width="1.5" stroke-dasharray="10,8"/>
+        <text x="170" y="13"  text-anchor="middle" fill="#555" font-size="11" font-family="sans-serif" font-weight="700">N</text>
+        <text x="170" y="333" text-anchor="middle" fill="#555" font-size="11" font-family="sans-serif" font-weight="700">S</text>
+        <text x="330" y="173" text-anchor="middle" fill="#555" font-size="11" font-family="sans-serif" font-weight="700">E</text>
+        <text x="12"  y="173" text-anchor="middle" fill="#555" font-size="11" font-family="sans-serif" font-weight="700">W</text>
+        <!-- North light -->
+        <g transform="translate(140,72)"><rect width="20" height="52" rx="4" fill="#111"/>
+          <circle id="n-r" cx="10" cy="12" r="6" fill="#282828"/>
+          <circle id="n-y" cx="10" cy="26" r="6" fill="#282828"/>
+          <circle id="n-g" cx="10" cy="40" r="6" fill="#282828"/>
         </g>
-        <g transform="translate(118,130)">
-          <rect width="18" height="48" rx="4" fill="#111"/>
-          <circle id="s-r" cx="9" cy="11" r="5" fill="#282828"/>
-          <circle id="s-y" cx="9" cy="24" r="5" fill="#282828"/>
-          <circle id="s-g" cx="9" cy="37" r="5" fill="#282828"/>
+        <!-- South light -->
+        <g transform="translate(180,216)"><rect width="20" height="52" rx="4" fill="#111"/>
+          <circle id="s-r" cx="10" cy="12" r="6" fill="#282828"/>
+          <circle id="s-y" cx="10" cy="26" r="6" fill="#282828"/>
+          <circle id="s-g" cx="10" cy="40" r="6" fill="#282828"/>
         </g>
-        <g transform="translate(130,94)">
-          <rect width="48" height="18" rx="4" fill="#111"/>
-          <circle id="e-r" cx="11" cy="9" r="5" fill="#282828"/>
-          <circle id="e-y" cx="24" cy="9" r="5" fill="#282828"/>
-          <circle id="e-g" cx="37" cy="9" r="5" fill="#282828"/>
+        <!-- East light -->
+        <g transform="translate(216,140)"><rect width="52" height="20" rx="4" fill="#111"/>
+          <circle id="e-r" cx="12" cy="10" r="6" fill="#282828"/>
+          <circle id="e-y" cx="26" cy="10" r="6" fill="#282828"/>
+          <circle id="e-g" cx="40" cy="10" r="6" fill="#282828"/>
         </g>
-        <g transform="translate(52,118)">
-          <rect width="48" height="18" rx="4" fill="#111"/>
-          <circle id="w-r" cx="11" cy="9" r="5" fill="#282828"/>
-          <circle id="w-y" cx="24" cy="9" r="5" fill="#282828"/>
-          <circle id="w-g" cx="37" cy="9" r="5" fill="#282828"/>
+        <!-- West light -->
+        <g transform="translate(72,180)"><rect width="52" height="20" rx="4" fill="#111"/>
+          <circle id="w-r" cx="12" cy="10" r="6" fill="#282828"/>
+          <circle id="w-y" cx="26" cy="10" r="6" fill="#282828"/>
+          <circle id="w-g" cx="40" cy="10" r="6" fill="#282828"/>
         </g>
+        <!-- queue badges -->
+        <g transform="translate(195,46)"><rect rx="8" width="36" height="18" fill="#1e2a3a"/>
+          <text id="badge-north-txt" x="18" y="13" text-anchor="middle" font-size="10" font-family="sans-serif" fill="#4a9eff" font-weight="600">0</text></g>
+        <g transform="translate(109,276)"><rect rx="8" width="36" height="18" fill="#1e2a3a"/>
+          <text id="badge-south-txt" x="18" y="13" text-anchor="middle" font-size="10" font-family="sans-serif" fill="#f0a030" font-weight="600">0</text></g>
+        <g transform="translate(276,109)"><rect rx="8" width="36" height="18" fill="#1e2a3a"/>
+          <text id="badge-east-txt" x="18" y="13" text-anchor="middle" font-size="10" font-family="sans-serif" fill="#3db87a" font-weight="600">0</text></g>
+        <g transform="translate(28,213)"><rect rx="8" width="36" height="18" fill="#1e2a3a"/>
+          <text id="badge-west-txt" x="18" y="13" text-anchor="middle" font-size="10" font-family="sans-serif" fill="#e05c8a" font-weight="600">0</text></g>
+        <!-- wait labels -->
+        <text id="wait-north" x="238" y="58"  font-size="8" font-family="sans-serif" fill="#666"></text>
+        <text id="wait-south" x="93"  y="290" font-size="8" font-family="sans-serif" fill="#666"></text>
+        <text id="wait-east"  x="276" y="140" font-size="8" font-family="sans-serif" fill="#666"></text>
+        <text id="wait-west"  x="28"  y="207" font-size="8" font-family="sans-serif" fill="#666"></text>
+        <!-- car dot groups -->
+        <g id="cars-north"></g>
+        <g id="cars-south"></g>
+        <g id="cars-east"></g>
+        <g id="cars-west"></g>
       </svg>
       <div class="cross-meta">
-        <span class="phase-lbl" id="phase-lbl">Waiting…</span>
+        <span class="phase-lbl" id="phase-lbl">Waiting...</span>
         <span class="phase-timer" id="phase-timer"></span>
       </div>
     </div>
 
     <div class="stats-row">
-      <div class="stat">
-        <div class="stat-lbl">Events today</div>
-        <div class="stat-val" id="stat-events">0</div>
-      </div>
-      <div class="stat">
-        <div class="stat-lbl">Active cameras</div>
-        <div class="stat-val" id="stat-cams">4</div>
-      </div>
+      <div class="stat"><div class="stat-lbl">Events today</div><div class="stat-val" id="stat-events">0</div></div>
+      <div class="stat"><div class="stat-lbl">Active cameras</div><div class="stat-val" id="stat-cams">4</div></div>
     </div>
   </div>
 
+  <!-- RIGHT: car list + event log -->
   <div class="right">
+
+    <!-- Car model list -->
+    <div class="cars-panel">
+      <div class="cars-hdr">
+        <span class="cars-hdr-lbl">DETECTED CARS</span>
+        <span id="cars-total" style="font-size:10px;color:#555">0 total</span>
+      </div>
+      <div class="cars-body" id="cars-body">
+        <div class="car-empty">No cars detected yet</div>
+      </div>
+    </div>
+
+    <!-- Event log -->
     <div class="logs-panel">
       <div class="logs-hdr">
         <span class="logs-hdr-lbl">EVENT LOG</span>
@@ -142,17 +187,25 @@
       </div>
       <div class="logs-body" id="log-body"></div>
     </div>
+
   </div>
 </div>
 
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 <script>
-const CAM_COLORS = {north:'#4a9eff',east:'#3db87a',south:'#f0a030',west:'#e05c8a'};
-const LIGHT_COLS = {red:'#e03030',yellow:'#e0b020',green:'#2ec040',off:'#282828'};
+const CAM_COLORS = {north:'#4a9eff', east:'#3db87a', south:'#f0a030', west:'#e05c8a'};
+const LIGHT_COLS = {red:'#e03030', yellow:'#e0b020', green:'#2ec040', off:'#282828'};
 
 let _eventCount = 0;
 let _offlineCams = new Set();
-let _flashTimer = null;
+let _flashTimer  = null;
+
+const CAR_SLOTS = {
+  north: [[145,108],[158,95],[132,95],[145,82],[158,69],[132,69]],
+  south: [[195,232],[182,245],[208,245],[195,258],[182,271],[208,271]],
+  east:  [[232,145],[245,158],[245,132],[258,145],[271,158],[271,132]],
+  west:  [[108,195],[95,182],[95,208],[82,195],[69,182],[69,208]],
+};
 
 function _setLight(id, state) {
   const el = document.getElementById(id);
@@ -162,6 +215,71 @@ function _applyDir(prefix, state) {
   _setLight(prefix+'-r', state==='red'    ? 'red'    : 'off');
   _setLight(prefix+'-y', state==='yellow' ? 'yellow' : 'off');
   _setLight(prefix+'-g', state==='green'  ? 'green'  : 'off');
+}
+
+function _renderCars(direction, cars) {
+  const g     = document.getElementById('cars-'+direction);
+  const slots = CAR_SLOTS[direction] || [];
+  const color = CAM_COLORS[direction] || '#aaa';
+  const tip   = document.getElementById('car-tip');
+  const svg   = document.getElementById('cross-svg');
+  while (g.firstChild) g.removeChild(g.firstChild);
+  cars.slice(0, slots.length).forEach((car, i) => {
+    const [cx, cy] = slots[i];
+    const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx', cx); c.setAttribute('cy', cy);
+    c.setAttribute('r', '5'); c.setAttribute('fill', color);
+    c.setAttribute('opacity', '0.85'); c.style.cursor = 'pointer';
+    c.addEventListener('mouseenter', e => {
+      const r = svg.getBoundingClientRect();
+      tip.style.left = (r.left + cx * r.width/340 + 8)+'px';
+      tip.style.top  = (r.top  + cy * r.height/340 - 26)+'px';
+      tip.style.display = 'block';
+      tip.textContent = `[${car.id}] ${car.model} • ${car.wait}s`;
+    });
+    c.addEventListener('mouseleave', () => { tip.style.display='none'; });
+    g.appendChild(c);
+  });
+  if (cars.length > slots.length) {
+    const [lx,ly] = slots[slots.length-1];
+    const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x', lx+8); t.setAttribute('y', ly+4);
+    t.setAttribute('font-size','8'); t.setAttribute('font-family','sans-serif');
+    t.setAttribute('fill', color); t.textContent = '+'+(cars.length-slots.length);
+    g.appendChild(t);
+  }
+  const badge = document.getElementById('badge-'+direction+'-txt');
+  if (badge) badge.textContent = cars.length;
+  const maxWait = cars.reduce((m,c) => Math.max(m, c.wait||0), 0);
+  const we = document.getElementById('wait-'+direction);
+  if (we) {
+    we.textContent = maxWait > 0 ? maxWait+'s' : '';
+    we.setAttribute('fill', maxWait>20 ? '#e03030' : maxWait>10 ? '#e0b020' : '#666');
+  }
+}
+
+function _renderCarList(allCars) {
+  const body  = document.getElementById('cars-body');
+  const total = document.getElementById('cars-total');
+  const count = allCars.length;
+  total.textContent = count + ' total';
+  if (count === 0) {
+    body.innerHTML = '<div class="car-empty">No cars detected yet</div>';
+    return;
+  }
+  body.innerHTML = '';
+  allCars.forEach(car => {
+    const color = CAM_COLORS[car.direction] || '#888';
+    const waitColor = car.wait > 20 ? '#e03030' : car.wait > 10 ? '#e0b020' : '#555';
+    const row = document.createElement('div');
+    row.className = 'car-row';
+    row.innerHTML =
+      `<div class="car-dir-dot" style="background:${color}" title="${car.direction}"></div>`+
+      `<span class="car-id">[${car.id}]</span>`+
+      `<span class="car-model" title="${car.model}">${car.model}</span>`+
+      `<span class="car-wait" style="color:${waitColor}">${car.wait}s</span>`;
+    body.appendChild(row);
+  });
 }
 
 const Monitor = {
@@ -175,7 +293,6 @@ const Monitor = {
     if (dot) { dot.style.background='#2ec040'; dot.style.animation='blink 1.6s infinite'; }
     document.getElementById('stat-cams').textContent = 4 - _offlineCams.size;
   },
-
   setCameraOffline(dir) {
     _offlineCams.add(dir);
     const cell = document.getElementById('cell-'+dir);
@@ -186,12 +303,11 @@ const Monitor = {
     if (cell && !cell.querySelector('.cam-offline-overlay')) {
       const ov = document.createElement('div');
       ov.className = 'cam-offline-overlay';
-      ov.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="3"/><line x1="2" y1="2" x2="22" y2="22"/></svg><span>OFFLINE</span>';
+      ov.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="3"/><line x1="2" y1="2" x2="22" y2="22"/></svg><span>OFFLINE</span>';
       cell.appendChild(ov);
     }
     document.getElementById('stat-cams').textContent = 4 - _offlineCams.size;
   },
-
   addLog(camera, event, type) {
     const typeColor = {info:'#4a9eff',warn:'#e0b020',danger:'#e03030',success:'#2ec040'};
     const dot = (type && typeColor[type]) ? typeColor[type] : (CAM_COLORS[camera] || '#888');
@@ -199,41 +315,36 @@ const Monitor = {
     _eventCount++;
     document.getElementById('stat-events').textContent = _eventCount;
     const body = document.getElementById('log-body');
-    const row = document.createElement('div');
+    const row  = document.createElement('div');
     row.className = 'log-row';
     row.innerHTML = `<div class="log-dot" style="background:${dot}"></div>`
-      + `<span class="log-cam">${camera ? camera[0].toUpperCase()+camera.slice(1) : '—'}</span>`
-      + `<span class="log-evt">${event||''}</span>`
-      + `<span class="log-time">${now}</span>`;
+      +`<span class="log-cam">${camera ? camera[0].toUpperCase()+camera.slice(1):'—'}</span>`
+      +`<span class="log-evt">${event||''}</span>`
+      +`<span class="log-time">${now}</span>`;
     body.prepend(row);
     if (body.children.length > 100) body.removeChild(body.lastChild);
   },
-
   clearLogs() {
     document.getElementById('log-body').innerHTML = '';
     _eventCount = 0;
     document.getElementById('stat-events').textContent = '0';
   },
-
   setLight(direction, state) {
     _applyDir(direction[0].toLowerCase(), state);
     document.getElementById('phase-lbl').textContent = direction+': '+state;
     document.getElementById('phase-timer').textContent = '';
   },
-
   setPhase(ns, ew, label) {
     ['n','s'].forEach(p => _applyDir(p, ns));
     ['e','w'].forEach(p => _applyDir(p, ew));
     document.getElementById('phase-lbl').textContent = label || ('N-S: '+ns+' / E-W: '+ew);
     document.getElementById('phase-timer').textContent = '';
   },
-
   allOff() {
     ['n','s','e','w'].forEach(p => _applyDir(p, 'off'));
     document.getElementById('phase-lbl').textContent = 'All off';
     document.getElementById('phase-timer').textContent = '';
   },
-
   flashAll(state, times, intervalMs) {
     if (_flashTimer) clearInterval(_flashTimer);
     let t = 0;
@@ -241,14 +352,26 @@ const Monitor = {
       const on = t % 2 === 0;
       ['n','s','e','w'].forEach(p => _applyDir(p, on ? state : 'off'));
       t++;
-      if (t >= times * 2) { clearInterval(_flashTimer); _flashTimer = null; }
-    }, intervalMs || 400);
+      if (t >= times*2) { clearInterval(_flashTimer); _flashTimer=null; }
+    }, intervalMs||400);
+  },
+  updateQueues(data) {
+    // data = {north:[{id,model,wait,direction},...], ...}
+    let allCars = [];
+    Object.keys(data).forEach(dir => {
+      const cars = data[dir];
+      _renderCars(dir, cars);
+      cars.forEach(c => allCars.push({...c, direction: dir}));
+    });
+    // Sort by wait time descending
+    allCars.sort((a,b) => (b.wait||0) - (a.wait||0));
+    _renderCarList(allCars);
   },
 };
 
 window.Monitor = Monitor;
 
-const socket = io({ transports: ['websocket', 'polling'] });
+const socket = io({ transports: ['websocket','polling'] });
 socket.on('connect',        ()  => console.log('SocketIO connected'));
 socket.on('disconnect',     ()  => console.log('SocketIO disconnected'));
 socket.on('add_log',        d   => Monitor.addLog(d.camera, d.event, d.type));
@@ -258,6 +381,7 @@ socket.on('all_off',        ()  => Monitor.allOff());
 socket.on('flash_all',      d   => Monitor.flashAll(d.state, d.times, d.interval));
 socket.on('set_stream',     d   => Monitor.setStream(d.dir, d.url));
 socket.on('camera_offline', d   => Monitor.setCameraOffline(d.dir));
+socket.on('update_queues',  d   => Monitor.updateQueues(d));
 </script>
 </body>
 </html>

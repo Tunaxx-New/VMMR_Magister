@@ -33,6 +33,11 @@ from image_enhancer import ImageEnhancer
 from deep_sort_tracker import DeepSortTracker
 from anpr import ANPR
 
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(name)s] %(levelname)s: %(message)s",
@@ -71,7 +76,7 @@ tld = TrafficLightDetector(
 # ── Car classifier (VMMR) ─────────────────────────────────────────────────────
 
 classifier = CarClassifier(
-    checkpoint_path    = "clip_cars_checkpoint.pth",
+    checkpoint_path    = os.getenv("CHECKPOINT_PATH"),
     confidence_threshold = 0.30,
     min_crop_size      = 48,
 )

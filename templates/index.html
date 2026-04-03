@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Crossroads Monitor</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden;font-family:system-ui,sans-serif;background:#0f0f12;color:#e0e0e0}
+  .root{display:flex;gap:14px;padding:14px;height:100vh;overflow:hidden}
+  .left{flex:1;display:flex;flex-direction:column;gap:10px;min-width:0;min-height:0}
+  .right{width:258px;display:flex;flex-direction:column;gap:10px;min-height:0}
+
+  /* cameras fill all remaining vertical space */
+  .cam-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:8px;flex:1;min-height:0}
+  .cam-cell{background:#1a1a1f;border:1px solid #2a2a35;border-radius:8px;overflow:hidden;position:relative;min-height:0}
+  .cam-label{position:absolute;top:6px;left:7px;font-size:11px;font-weight:600;color:#fff;background:rgba(0,0,0,.55);padding:2px 7px;border-radius:4px;z-index:2;letter-spacing:.05em;text-transform:uppercase}
+  .cam-cell img{width:100%;height:100%;display:block;object-fit:contain}
+  .cam-dot{position:absolute;bottom:7px;right:7px;width:7px;height:7px;border-radius:50%;background:#2ec040;animation:blink 1.6s infinite}
+  .cam-offline-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:#111}
+  .cam-offline-overlay svg{opacity:.3}
+  .cam-offline-overlay span{font-size:11px;color:rgba(255,255,255,.3);letter-spacing:.05em}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+
+  /* intersection — fixed, does not grow */
+  .cross-wrap{background:#1a1a1f;border:1px solid #2a2a35;border-radius:12px;padding:10px;display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0}
+  .cross-meta{display:flex;gap:14px;align-items:center}
+  .phase-lbl{font-size:12px;font-weight:500;color:#e0e0e0}
+  .phase-timer{font-size:12px;color:#888;font-variant-numeric:tabular-nums}
+
+  /* stats — fixed, does not grow */
+  .stats-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;flex-shrink:0}
+  .stat{background:#1a1a1f;border:1px solid #2a2a35;border-radius:8px;padding:8px 13px}
+  .stat-lbl{font-size:11px;color:#888;margin-bottom:2px}
+  .stat-val{font-size:18px;font-weight:500;color:#e0e0e0}
+
+  /* logs fill right column */
+  .logs-panel{background:#141418;border:1px solid #2a2a35;border-radius:12px;display:flex;flex-direction:column;flex:1;overflow:hidden;min-height:0}
+  .logs-hdr{padding:9px 13px;border-bottom:1px solid #2a2a35;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+  .logs-hdr-lbl{font-size:11px;font-weight:600;color:#666;letter-spacing:.06em}
+  .logs-clear{font-size:11px;cursor:pointer;background:none;border:none;color:#666;font-family:inherit}
+  .logs-clear:hover{color:#aaa}
+  .logs-body{flex:1;overflow-y:auto;padding:4px 0;min-height:0}
+  .log-row{display:flex;align-items:center;gap:7px;padding:4px 13px}
+  .log-row:hover{background:#1e1e26}
+  .log-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+  .log-cam{font-size:12px;font-weight:500;color:#ccc;min-width:40px}
+  .log-evt{font-size:11px;color:#888;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .log-time{font-size:11px;color:#555;font-variant-numeric:tabular-nums;flex-shrink:0}
+</style>
+</head>
+<body>
+<div class="root">
+  <div class="left">
+    <div class="cam-grid">
+      <div class="cam-cell" id="cell-north">
+        <span class="cam-label">North</span>
+        <img id="img-north" src="/video/north" onerror="Monitor.setCameraOffline('north')" alt="">
+        <div class="cam-dot" id="dot-north"></div>
+      </div>
+      <div class="cam-cell" id="cell-east">
+        <span class="cam-label">East</span>
+        <img id="img-east" src="/video/east" onerror="Monitor.setCameraOffline('east')" alt="">
+        <div class="cam-dot" id="dot-east"></div>
+      </div>
+      <div class="cam-cell" id="cell-south">
+        <span class="cam-label">South</span>
+        <img id="img-south" src="/video/south" onerror="Monitor.setCameraOffline('south')" alt="">
+        <div class="cam-dot" id="dot-south"></div>
+      </div>
+      <div class="cam-cell" id="cell-west">
+        <span class="cam-label">West</span>
+        <img id="img-west" src="/video/west" onerror="Monitor.setCameraOffline('west')" alt="">
+        <div class="cam-dot" id="dot-west"></div>
+      </div>
+    </div>
+
+    <div class="cross-wrap">
+      <svg width="200" height="200" viewBox="0 0 230 230">
+        <rect x="0"  y="80" width="230" height="70" fill="#2a2a30"/>
+        <rect x="80" y="0"  width="70"  height="230" fill="#2a2a30"/>
+        <rect x="80" y="80" width="70"  height="70"  fill="#242428"/>
+        <rect x="0"   y="0"   width="80" height="80"  fill="#1a1a1f"/>
+        <rect x="150" y="0"   width="80" height="80"  fill="#1a1a1f"/>
+        <rect x="0"   y="150" width="80" height="80"  fill="#1a1a1f"/>
+        <rect x="150" y="150" width="80" height="80"  fill="#1a1a1f"/>
+        <line x1="0"   y1="115" x2="80"  y2="115" stroke="#444" stroke-width="1.5" stroke-dasharray="9,7"/>
+        <line x1="150" y1="115" x2="230" y2="115" stroke="#444" stroke-width="1.5" stroke-dasharray="9,7"/>
+        <line x1="115" y1="0"   x2="115" y2="80"  stroke="#444" stroke-width="1.5" stroke-dasharray="9,7"/>
+        <line x1="115" y1="150" x2="115" y2="230" stroke="#444" stroke-width="1.5" stroke-dasharray="9,7"/>
+        <text x="115" y="13"  text-anchor="middle" fill="#555" font-size="10" font-family="sans-serif" font-weight="600">N</text>
+        <text x="115" y="224" text-anchor="middle" fill="#555" font-size="10" font-family="sans-serif" font-weight="600">S</text>
+        <text x="222" y="119" text-anchor="middle" fill="#555" font-size="10" font-family="sans-serif" font-weight="600">E</text>
+        <text x="9"   y="119" text-anchor="middle" fill="#555" font-size="10" font-family="sans-serif" font-weight="600">W</text>
+        <g transform="translate(94,52)">
+          <rect width="18" height="48" rx="4" fill="#111"/>
+          <circle id="n-r" cx="9" cy="11" r="5" fill="#282828"/>
+          <circle id="n-y" cx="9" cy="24" r="5" fill="#282828"/>
+          <circle id="n-g" cx="9" cy="37" r="5" fill="#282828"/>
+        </g>
+        <g transform="translate(118,130)">
+          <rect width="18" height="48" rx="4" fill="#111"/>
+          <circle id="s-r" cx="9" cy="11" r="5" fill="#282828"/>
+          <circle id="s-y" cx="9" cy="24" r="5" fill="#282828"/>
+          <circle id="s-g" cx="9" cy="37" r="5" fill="#282828"/>
+        </g>
+        <g transform="translate(130,94)">
+          <rect width="48" height="18" rx="4" fill="#111"/>
+          <circle id="e-r" cx="11" cy="9" r="5" fill="#282828"/>
+          <circle id="e-y" cx="24" cy="9" r="5" fill="#282828"/>
+          <circle id="e-g" cx="37" cy="9" r="5" fill="#282828"/>
+        </g>
+        <g transform="translate(52,118)">
+          <rect width="48" height="18" rx="4" fill="#111"/>
+          <circle id="w-r" cx="11" cy="9" r="5" fill="#282828"/>
+          <circle id="w-y" cx="24" cy="9" r="5" fill="#282828"/>
+          <circle id="w-g" cx="37" cy="9" r="5" fill="#282828"/>
+        </g>
+      </svg>
+      <div class="cross-meta">
+        <span class="phase-lbl" id="phase-lbl">Waiting…</span>
+        <span class="phase-timer" id="phase-timer"></span>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat">
+        <div class="stat-lbl">Events today</div>
+        <div class="stat-val" id="stat-events">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-lbl">Active cameras</div>
+        <div class="stat-val" id="stat-cams">4</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="right">
+    <div class="logs-panel">
+      <div class="logs-hdr">
+        <span class="logs-hdr-lbl">EVENT LOG</span>
+        <button class="logs-clear" onclick="Monitor.clearLogs()">clear</button>
+      </div>
+      <div class="logs-body" id="log-body"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<script>
+const CAM_COLORS = {north:'#4a9eff',east:'#3db87a',south:'#f0a030',west:'#e05c8a'};
+const LIGHT_COLS = {red:'#e03030',yellow:'#e0b020',green:'#2ec040',off:'#282828'};
+
+let _eventCount = 0;
+let _offlineCams = new Set();
+let _flashTimer = null;
+
+function _setLight(id, state) {
+  const el = document.getElementById(id);
+  if (el) el.setAttribute('fill', LIGHT_COLS[state] || LIGHT_COLS.off);
+}
+function _applyDir(prefix, state) {
+  _setLight(prefix+'-r', state==='red'    ? 'red'    : 'off');
+  _setLight(prefix+'-y', state==='yellow' ? 'yellow' : 'off');
+  _setLight(prefix+'-g', state==='green'  ? 'green'  : 'off');
+}
+
+const Monitor = {
+  setStream(dir, url) {
+    _offlineCams.delete(dir);
+    const ov = document.querySelector('#cell-'+dir+' .cam-offline-overlay');
+    if (ov) ov.remove();
+    const img = document.getElementById('img-'+dir);
+    if (img) { img.style.display='block'; img.src=url; }
+    const dot = document.getElementById('dot-'+dir);
+    if (dot) { dot.style.background='#2ec040'; dot.style.animation='blink 1.6s infinite'; }
+    document.getElementById('stat-cams').textContent = 4 - _offlineCams.size;
+  },
+
+  setCameraOffline(dir) {
+    _offlineCams.add(dir);
+    const cell = document.getElementById('cell-'+dir);
+    const img  = document.getElementById('img-'+dir);
+    const dot  = document.getElementById('dot-'+dir);
+    if (img) img.style.display = 'none';
+    if (dot) { dot.style.background='#e03030'; dot.style.animation='none'; }
+    if (cell && !cell.querySelector('.cam-offline-overlay')) {
+      const ov = document.createElement('div');
+      ov.className = 'cam-offline-overlay';
+      ov.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="3"/><line x1="2" y1="2" x2="22" y2="22"/></svg><span>OFFLINE</span>';
+      cell.appendChild(ov);
+    }
+    document.getElementById('stat-cams').textContent = 4 - _offlineCams.size;
+  },
+
+  addLog(camera, event, type) {
+    const typeColor = {info:'#4a9eff',warn:'#e0b020',danger:'#e03030',success:'#2ec040'};
+    const dot = (type && typeColor[type]) ? typeColor[type] : (CAM_COLORS[camera] || '#888');
+    const now = new Date().toTimeString().slice(0,8);
+    _eventCount++;
+    document.getElementById('stat-events').textContent = _eventCount;
+    const body = document.getElementById('log-body');
+    const row = document.createElement('div');
+    row.className = 'log-row';
+    row.innerHTML = `<div class="log-dot" style="background:${dot}"></div>`
+      + `<span class="log-cam">${camera ? camera[0].toUpperCase()+camera.slice(1) : '—'}</span>`
+      + `<span class="log-evt">${event||''}</span>`
+      + `<span class="log-time">${now}</span>`;
+    body.prepend(row);
+    if (body.children.length > 100) body.removeChild(body.lastChild);
+  },
+
+  clearLogs() {
+    document.getElementById('log-body').innerHTML = '';
+    _eventCount = 0;
+    document.getElementById('stat-events').textContent = '0';
+  },
+
+  setLight(direction, state) {
+    _applyDir(direction[0].toLowerCase(), state);
+    document.getElementById('phase-lbl').textContent = direction+': '+state;
+    document.getElementById('phase-timer').textContent = '';
+  },
+
+  setPhase(ns, ew, label) {
+    ['n','s'].forEach(p => _applyDir(p, ns));
+    ['e','w'].forEach(p => _applyDir(p, ew));
+    document.getElementById('phase-lbl').textContent = label || ('N-S: '+ns+' / E-W: '+ew);
+    document.getElementById('phase-timer').textContent = '';
+  },
+
+  allOff() {
+    ['n','s','e','w'].forEach(p => _applyDir(p, 'off'));
+    document.getElementById('phase-lbl').textContent = 'All off';
+    document.getElementById('phase-timer').textContent = '';
+  },
+
+  flashAll(state, times, intervalMs) {
+    if (_flashTimer) clearInterval(_flashTimer);
+    let t = 0;
+    _flashTimer = setInterval(() => {
+      const on = t % 2 === 0;
+      ['n','s','e','w'].forEach(p => _applyDir(p, on ? state : 'off'));
+      t++;
+      if (t >= times * 2) { clearInterval(_flashTimer); _flashTimer = null; }
+    }, intervalMs || 400);
+  },
+};
+
+window.Monitor = Monitor;
+
+const socket = io();
+socket.on('connect',        ()  => console.log('SocketIO connected'));
+socket.on('disconnect',     ()  => console.log('SocketIO disconnected'));
+socket.on('add_log',        d   => Monitor.addLog(d.camera, d.event, d.type));
+socket.on('set_light',      d   => Monitor.setLight(d.direction, d.state));
+socket.on('set_phase',      d   => Monitor.setPhase(d.ns, d.ew, d.label));
+socket.on('all_off',        ()  => Monitor.allOff());
+socket.on('flash_all',      d   => Monitor.flashAll(d.state, d.times, d.interval));
+socket.on('set_stream',     d   => Monitor.setStream(d.dir, d.url));
+socket.on('camera_offline', d   => Monitor.setCameraOffline(d.dir));
+</script>
+</body>
+</html>

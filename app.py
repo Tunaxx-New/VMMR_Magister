@@ -204,8 +204,14 @@ def _draw_label(
 _model_votes: dict[str, Counter] = {}
 
 
+_YOLO_CLASSES = {"car", "truck", "bus", "motorcycle", "vehicle"}
+
 def _cast_vote(car_id: str, model_name: str, confidence: float) -> str | None:
-    """Weighted temporal voting — returns stable winner or None."""
+    """Weighted temporal voting — returns stable winner or None.
+    Ignores YOLO raw class names so they never appear as model labels.
+    """
+    if not model_name or model_name.lower().strip() in _YOLO_CLASSES:
+        return None
     if car_id not in _model_votes:
         _model_votes[car_id] = Counter()
 

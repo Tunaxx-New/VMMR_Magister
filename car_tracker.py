@@ -236,17 +236,16 @@ class CarTracker:
                         car.embedding = 0.7 * car.embedding + 0.3 * embedding
                         car.embedding /= np.linalg.norm(car.embedding)
                 else:
-                    # New car
-                    car_id    = uuid.uuid4().hex[:8]
-                    model_name = det.class_name   # replaced by classifier if available
+                    # New car — use placeholder until VMMR classifier returns a result
+                    car_id = uuid.uuid4().hex[:8]
                     car = TrackedCar(
                         id          = car_id,
-                        model_name  = model_name,
+                        model_name  = "Identifying...",   # never show YOLO class name
                         direction   = direction,
                         bbox        = bbox,
                         embedding   = embedding if embedding is not None
                                       else np.zeros(EMBED_DIM),
-                        confidence  = det.confidence,
+                        confidence  = 0.0,   # 0 means "not yet classified"
                         frame_count = 1,
                         is_new      = False,  # wait for MIN_CONFIRM_FRAMES
                     )
@@ -270,8 +269,20 @@ class CarTracker:
 
             return active
 
+    # YOLO raw class names — never use these as the displayed model name
+    _YOLO_CLASSES = {"car", "truck", "bus", "motorcycle", "vehicle"}
+
     def update_model_name(self, car_id: str, model_name: str, confidence: float) -> None:
-        """Called when the VMMR classifier returns a result for a car."""
+        """
+        Called when the VMMR classifier returns a result for a car.
+        Only accepts real classifier results — ignores YOLO generic class names.
+        """
+        # Reject YOLO fallback labels
+        if model_name.lower().strip() in self._YOLO_CLASSES:
+            return
+        # Reject empty or placeholder strings
+        if not model_name or model_name == "Identifying...":
+            return
         with self._lock:
             if car_id in self._cars:
                 car = self._cars[car_id]
